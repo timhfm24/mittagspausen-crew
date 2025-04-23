@@ -1,40 +1,39 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>EP Mittagspausen Crew</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 2rem;
-      background: #f4f4f4;
+      background: #f7f7f7;
       text-align: center;
+      padding: 2rem;
     }
-    h1 { color: #2c3e50; }
     button {
+      margin: 1rem;
       padding: 1rem 2rem;
-      font-size: 1rem;
-      margin-top: 1rem;
-      background-color: #3498db;
-      color: white;
+      font-size: 1.2rem;
+      border-radius: 10px;
       border: none;
-      border-radius: 8px;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #2980b9;
+    #chosen {
+      font-size: 2rem;
+      margin-top: 2rem;
+      font-weight: bold;
     }
-    #result { font-size: 1.5rem; margin-top: 2rem; }
-    #history { margin-top: 3rem; text-align: left; display: inline-block; }
+    .secondary {
+      background-color: #ccc;
+    }
   </style>
 </head>
 <body>
   <h1>🍽️ EP Mittagspausen Crew</h1>
-  <p>Wohin geht's heute?</p>
-  <button onclick="pickRestaurant()">🔁 Zufällig auswählen</button>
-  <div id="result"></div>
-  <div id="history"></div>
+  <p>Klicke, um ein zufälliges Restaurant auszuwählen (mit 14-Tage-Abstand).</p>
+  <button onclick="chooseRestaurant()">Restaurant wählen</button>
+  <button class="secondary" onclick="resetHistory()">Zähler zurücksetzen</button>
+  <div id="chosen"></div>
 
   <script>
     const restaurants = [
@@ -48,6 +47,7 @@
       "Babil Shawarma",
       "Mittmanns"
     ];
+    const MIN_DAYS = 14;
 
     function getHistory() {
       return JSON.parse(localStorage.getItem("visitHistory") || "{}");
@@ -59,46 +59,34 @@
       localStorage.setItem("visitHistory", JSON.stringify(history));
     }
 
-    function daysAgo(dateString) {
-      const then = new Date(dateString);
+    function daysSince(dateStr) {
+      const past = new Date(dateStr);
       const now = new Date();
-      const diffTime = now - then;
-      return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      const diff = (now - past) / (1000 * 60 * 60 * 24);
+      return Math.floor(diff);
     }
 
-    function pickRestaurant() {
+    function chooseRestaurant() {
       const history = getHistory();
-      const eligible = restaurants.filter(r => {
-        return !(r in history) || daysAgo(history[r]) >= 14;
-      });
+      const eligible = restaurants.filter(r =>
+        !history[r] || daysSince(history[r]) >= MIN_DAYS
+      );
 
-      let chosen;
-      if (eligible.length > 0) {
-        chosen = eligible[Math.floor(Math.random() * eligible.length)];
-      } else {
-        chosen = restaurants[Math.floor(Math.random() * restaurants.length)];
+      if (eligible.length === 0) {
+        document.getElementById("chosen").textContent = "❌ Kein Restaurant erfüllt den 14-Tage-Abstand.";
+        return;
       }
 
+      const chosen = eligible[Math.floor(Math.random() * eligible.length)];
       saveVisit(chosen);
-      document.getElementById("result").innerHTML = `👉 Heute geht's zu: <strong>${chosen}</strong>`;
-      showHistory();
+      document.getElementById("chosen").textContent = `✅ Heute geht's zu: ${chosen}`;
     }
 
-    function showHistory() {
-      const history = getHistory();
-      let html = "<h3>📜 Letzte Besuche</h3><ul>";
-      restaurants.forEach(r => {
-        if (history[r]) {
-          html += `<li>${r}: vor ${daysAgo(history[r])} Tagen</li>`;
-        } else {
-          html += `<li>${r}: noch nie besucht</li>`;
-        }
-      });
-      html += "</ul>";
-      document.getElementById("history").innerHTML = html;
+    function resetHistory() {
+      localStorage.clear();
+      alert("Der Zähler wurde zurückgesetzt!");
+      location.reload();
     }
-
-    showHistory();
   </script>
 </body>
 </html>
