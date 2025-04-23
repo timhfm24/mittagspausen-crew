@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EP Mittagspausen Crew</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background: #f4f4f4;
+      text-align: center;
+    }
+    h1 { color: #2c3e50; }
+    button {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      margin-top: 1rem;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    #result { font-size: 1.5rem; margin-top: 2rem; }
+    #history { margin-top: 3rem; text-align: left; display: inline-block; }
+  </style>
+</head>
+<body>
+  <h1>🍽️ EP Mittagspausen Crew</h1>
+  <p>Wohin geht's heute?</p>
+  <button onclick="pickRestaurant()">🔁 Zufällig auswählen</button>
+  <div id="result"></div>
+  <div id="history"></div>
+
+  <script>
+    const restaurants = [
+      "Gondel",
+      "Nem & More",
+      "La Pho",
+      "Chicken Box Döner",
+      "Pizza Gondel",
+      "Don Sushi",
+      "Burgers Burgers",
+      "Babil Shawarma",
+      "Mittmanns"
+    ];
+
+    function getHistory() {
+      return JSON.parse(localStorage.getItem("visitHistory") || "{}");
+    }
+
+    function saveVisit(name) {
+      const history = getHistory();
+      history[name] = new Date().toISOString();
+      localStorage.setItem("visitHistory", JSON.stringify(history));
+    }
+
+    function daysAgo(dateString) {
+      const then = new Date(dateString);
+      const now = new Date();
+      const diffTime = now - then;
+      return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    function pickRestaurant() {
+      const history = getHistory();
+      const eligible = restaurants.filter(r => {
+        return !(r in history) || daysAgo(history[r]) >= 14;
+      });
+
+      let chosen;
+      if (eligible.length > 0) {
+        chosen = eligible[Math.floor(Math.random() * eligible.length)];
+      } else {
+        chosen = restaurants[Math.floor(Math.random() * restaurants.length)];
+      }
+
+      saveVisit(chosen);
+      document.getElementById("result").innerHTML = `👉 Heute geht's zu: <strong>${chosen}</strong>`;
+      showHistory();
+    }
+
+    function showHistory() {
+      const history = getHistory();
+      let html = "<h3>📜 Letzte Besuche</h3><ul>";
+      restaurants.forEach(r => {
+        if (history[r]) {
+          html += `<li>${r}: vor ${daysAgo(history[r])} Tagen</li>`;
+        } else {
+          html += `<li>${r}: noch nie besucht</li>`;
+        }
+      });
+      html += "</ul>";
+      document.getElementById("history").innerHTML = html;
+    }
+
+    showHistory();
+  </script>
+</body>
+</html>
