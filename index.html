@@ -23,8 +23,10 @@
       margin-top: 2rem;
       font-weight: bold;
     }
-    .secondary {
-      background-color: #ccc;
+    .restaurant-img {
+      width: 200px; /* Setze hier die gewünschte Breite für die Bilder */
+      margin-top: 1rem;
+      border-radius: 10px;
     }
   </style>
 </head>
@@ -35,17 +37,19 @@
   <button class="secondary" onclick="resetHistory()">Zähler zurücksetzen</button>
   <div id="chosen"></div>
 
+  <div id="restaurant-img"></div>
+
   <script>
     const restaurants = [
-      "Gondel",
-      "Nem & More",
-      "La Pho",
-      "Chicken Box Döner",
-      "Pizza Gondel",
-      "Don Sushi",
-      "Burgers Burgers",
-      "Babil Shawarma",
-      "Mittmanns"
+      { name: "Gondel", img: "https://www.google.de/maps/place/Asia+Gondel/@52.5117091,13.4169596,3a,75y,90t/data=!3m8!1e2!3m6!1sCIHM0ogKEICAgIC0grH2fQ!2e10!3e12!6shttps:%2F%2Flh3.googleusercontent.com%2Fgps-cs-s%2FAB5caB-o2vRo2NLnzqKSyMCnsljHIGc99c8DNAnjLTbXcnbJ3RurAJmuJnv3KhTHp52GaHS6xhBQrk39pxLtCfgHASlIKVzo8wMhFCHfce3vNJhaqFDskcmxZ4JGcYOiCH0NHxbak3ti%3Dw114-h86-k-no!7i4032!8i3024!4m11!1m2!2m1!1sRestaurants!3m7!1s0x47a84e25284d5a75:0x9919b9be4bc81d2d!8m2!3d52.5116977!4d13.4169788!10e5!15sCgtSZXN0YXVyYW50c1oNIgtyZXN0YXVyYW50c5IBEGFzaWFuX3Jlc3RhdXJhbnTgAQA!16s%2Fg%2F11bc6zcj14?entry=ttu&g_ep=EgoyMDI1MDQyMC4wIKXMDSoASAFQAw%3D%3D" },
+      { name: "Nem & More", img: "URL_ZUM_BILD" },
+      { name: "La Pho", img: "URL_ZUM_BILD" },
+      { name: "Chicken Box Döner", img: "URL_ZUM_BILD" },
+      { name: "Pizza Gondel", img: "URL_ZUM_BILD" },
+      { name: "Don Sushi", img: "URL_ZUM_BILD" },
+      { name: "Burgers Burgers", img: "URL_ZUM_BILD" },
+      { name: "Babil Shawarma", img: "URL_ZUM_BILD" },
+      { name: "Mittmanns", img: "URL_ZUM_BILD" }
     ];
     const MIN_DAYS = 14;
 
@@ -69,7 +73,7 @@
     function chooseRestaurant() {
       const history = getHistory();
       const eligible = restaurants.filter(r =>
-        !history[r] || daysSince(history[r]) >= MIN_DAYS
+        !history[r.name] || daysSince(history[r.name]) >= MIN_DAYS
       );
 
       if (eligible.length === 0) {
@@ -78,8 +82,11 @@
       }
 
       const chosen = eligible[Math.floor(Math.random() * eligible.length)];
-      saveVisit(chosen);
-      document.getElementById("chosen").textContent = `✅ Heute geht's zu: ${chosen}`;
+      saveVisit(chosen.name);
+      document.getElementById("chosen").textContent = `✅ Heute geht's zu: ${chosen.name}`;
+
+      // Füge das Bild des gewählten Restaurants hinzu
+      document.getElementById("restaurant-img").innerHTML = `<img src="${chosen.img}" alt="${chosen.name}" class="restaurant-img">`;
     }
 
     function resetHistory() {
